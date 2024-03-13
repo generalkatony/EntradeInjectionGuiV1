@@ -149,21 +149,42 @@ btn_get_path = ttk.Button(
     info_frame, text="Select File", command=lambda: set_path(csv_entry)
 )
 btn_get_path.grid(row=1, column=4, padx=2, pady=2)
+
+##### FUNCTION TO PING URL ####################################
+def ping_url(url):
+    try:
+        response = requests.get(url, timeout=5)  # Timeout set to 5 seconds
+        # Check if the HTTP status code is OK (200)
+        if response.status_code == 200:
+            print(f"URL {url} is active and responding.")
+            return True
+        else:
+            print(f"URL {url} is reachable but returned status code {response.status_code}.")
+            return False
+    except requests.ConnectionError:
+        print(f"URL {url} could not be reached.")
+        return False
+    except requests.Timeout:
+        print(f"Request to URL {url} timed out.")
+        return False
+    except requests.RequestException as e:
+        print(f"An error occurred while trying to ping {url}: {e}")
+        return False
+    
+url_entry = info_widgets["URL"]
+
+btn_ping_URL = ttk.Button(
+    info_frame, text="Ping URL", command=lambda: ping_url(url_entry.get())
+)
+btn_ping_URL.grid(row=3, column=4, padx=2, pady=2)
+
 ############################################################
 
 ############# DEFAULT FIELD FRAME ##########################
 
 variables = [
-    "fulfillment_date",
-    "commodity",
-    "volume",
-    "price",
-    "asset",
-    "status",
-    "final_delivery",
-    "external _id",
-    "external_source",
-    "custom_field_name",
+    "CurveDate",
+
 ]
 
 ####### CREATE VALUE INPUT FRAME #####################
@@ -185,8 +206,6 @@ mode_switch = ttk.Checkbutton(frame, text="Theme", style="Switch", command=toggl
 mode_switch.grid(row=7, column=0, padx=2, pady=5, sticky="nsew")
 
 ############## ADD ENTRY BUTTON FOR CUSTOM FIELDS #############################
-
-
 def add_entry(frame, widget, key=None, value=None):
     custom_label = ttk.Entry(frame)
     custom_label.grid(row=len(widget), column=0, padx=2, pady=2)

@@ -30,96 +30,23 @@ def bulk_ticket_upload(upload_file, headers, match_field, url):
         header=0,
     )
 
-    # Specify the CSV file path for the fetched SUBLEG ID DATA to be stored and read
-    subleg_file_path = "response_data.csv"
-
     # for possible empty entries in the CSV file, panda fills the data set with an empty ""
     df_data = df_data.fillna("")
-
-    # Convert TRADE_DATE column to Molecule Accepted format
-    date_format = "%Y-%m-%d %H:%M:%S"
-    df_data["fulfillment_date"] = pd.to_datetime(
-        df_data["fulfillment_date"], dayfirst=True
-    ).dt.strftime(date_format)
 
     print(df_data)
 
     # Iterates through each row inside the CSV file
 
     for idx, data in df_data.iterrows():
-        ################ SUBMIT API REQUEST TO FETCH SUBLEG ID ###################################
-
-        trade_id = []
-        subleg_id = []
-
-        if data["trade_id"] is not None and data["trade_id"] != "":
-            trade_id = data["trade_id"]
-
-            get_subleg_url = f"https://{url}/api/v2/legs/sublegs?trade_id=" + str(
-                trade_id
-            )
-            ic(get_subleg_url)
-            # API requests for subleg ID of the given trade ID
-            response = requests.get(get_subleg_url, headers=headers)
-
-            # Parse the JSON response
-            response_data = response.json()
-
-            # print response for checking
-            # print(json.dumps(response_data, separators=(",", ":"), indent=4))
-
-            ############# filter n panda transform retrived subleg data ##################
-
-            # Extract data from the JSON response
-            res_data = response_data["data"]
-
-            # Create an empty list to store the flattened data (unnest all the data inside atrributes)
-            flattened_data = []
-
-            # Iterate through the data and flatten the attributes
-            for item in res_data:
-                record = {"id": item["id"], "type": item["type"], **item["attributes"]}
-                flattened_data.append(record)
-
-            # Create a Pandas DataFrame from the flattened data
-            df = pd.DataFrame(flattened_data)
-
-            print(df)
-
-            ############ for writing the subleg_id data to csv format#############################################
-
-            # Write the DataFrame to a CSV file
-            df.to_csv(subleg_file_path, index=True)
-
-            ############## THIS is the READ SUBLEG_ID N UPLOAD section##############################
-
-            # Read the saved response
-            df = pd.read_csv(
-                f"{subleg_file_path}",
-                header=0,
-            )
-
-            # Select which subleg to write to [molecule returns as 'ID']
-            selected_subleg = -1
-            subleg_id = int(df["id"].iloc[selected_subleg])
-
-        else:
-            trade_id = ""
-            subleg_id = ""
-
         # Populate the payload with booleans fill, boolean dedupe_external_id and the subleg_id depending whether if trade_id exists
         payload = {}
 
         for key, value in match_field.items():
-            payload[key] = data[value]
-        if str(subleg_id) is not None and str(subleg_id) != "":
-            payload["fill"] = "true"
-            payload["dedupe_external_id"] = "true"
-            payload["subleg_id"] = str(subleg_id)
+            try:
+                payload[key] = data[value]
+            except KeyError as e:
+                print(f"Key error: {e}. This key was not found in the data. Skipping this key.")
 
-        else:
-            payload["fill"] = "false"
-            payload["dedupe_external_id"] = "false"
 
         ####################### FILTER DATA SECTION ###########################################
 
@@ -137,12 +64,8 @@ def bulk_ticket_upload(upload_file, headers, match_field, url):
 
         ######## check if CHECKBOX condition is valid##################
 
-        allowed_statuses = {
-            "status": {"adjustment", "estimate", "in_transit", "delivered/received"},
-            "fill": {"true", "false"},
-            "final_delivery": {"true", "false"},
-            "dedupe_external_id": {"true", "false"},
-        }
+        allowed_statuses = {}
+
         # Define the allowed statuses
 
         for key, value in allowed_statuses.items():
@@ -151,7 +74,7 @@ def bulk_ticket_upload(upload_file, headers, match_field, url):
 
         ############### UPLOAD DATA N PRINT RESPONSE ###########################################
 
-        ticket_url = f"https://{url}/api/v2/inventory/tickets"
+        ticket_url = f"{url}"
 
         # Send the JSON data in the request
         response = requests.post(
