@@ -1,13 +1,13 @@
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, scrolledtext
 import json
 import os
 from icecream import ic
 import logic
 from logic import *
+import sys
 
 ############## GENERAL FUNCTIONS ############################
-
 
 ############# INITIALIZE THE GUI ############################
 
@@ -75,8 +75,7 @@ def toggle_mode():
         style.theme_use("forest-light")
     else:
         style.theme_use("forest-dark")
-
-
+        
 ########### UNIVERSAL FIELD DATA DICT ######################
 # Initialization of required value libraries to store
 # entry widgets path and values ertered into the widgets
@@ -115,13 +114,41 @@ cusfields_frame.grid(row=1, column=1, padx=10, pady=10)
 # Status Bar
 status_bar_frame = ttk.LabelFrame(frame, text="Status")
 status_bar_frame.grid(row=2, column=1, padx=5, pady=5)
+# Console Frame
+console_frame = ttk.LabelFrame(frame, text="Console")
+console_frame.grid(row=0, column=1, padx=5, pady=5)
 ###############################################################
+
+############ ADD CONSOLE ###################################
+class TextRedirector(object):
+    def __init__(self, widget):
+        self.widget = widget
+
+    def write(self, str):
+        self.widget.configure(state='normal')
+        self.widget.insert(tk.END, str)
+        self.widget.see(tk.END)
+        self.widget.configure(state='disabled')
+
+    def flush(self):
+        pass  # This might be needed depending on the Python version.
+
+# ScrolledText widget for the console
+console = scrolledtext.ScrolledText(console_frame, state='disabled', height=15)
+console.pack(fill=tk.BOTH, expand=True)
+
+# Redirect sys.stdout and sys.stderr
+sys.stdout = TextRedirector(console)
+sys.stderr = TextRedirector(console)
+
+############################################################
+
 
 # NAME variables to be created for the info_frame
 info_fields = [
     "URL",
-    "Email",
-    "Token",
+    "username",
+    "password",
 ]
 
 # initialization of the info_widgets
@@ -129,7 +156,7 @@ info_widgets = {}
 
 # for each variable in info_fields, create an entry widget
 for i, var_name in enumerate(info_fields):
-    label = ttk.Label(info_frame, text=var_name.capitalize() + ":")
+    label = ttk.Label(info_frame, text=var_name + ":")
     label.grid(row=i, column=0, sticky="ew", padx=3, pady=3)
 
     # Create a regular Entry widget for other variables
@@ -250,7 +277,11 @@ def get_values(widget, entered_values):
 
     # Now, you can print the formatted values
     print("Formatted Entered Values:")
-    ic(entered_values)
+    try:
+        ic(entered_values)
+    except NameError:
+        print(entered_values)
+
 
 
 def get_custom_values(w, entered_values):
@@ -384,3 +415,7 @@ upload_button.grid(row=2, column=4, padx=2, pady=2)
 
 #############################################################
 window.mainloop()
+
+# Remember to restore sys.stdout and sys.stderr when closing the application
+sys.stdout = sys.__stdout__
+sys.stderr = sys.__stderr__
