@@ -10,13 +10,15 @@ import sys
 ############## GENERAL FUNCTIONS ############################
 # PRINT WITH IC UNLESS HAVE ERROR WHICHASE USE STD PRINT
 def debug_print(*args):
-    try:
-        # Attempt to use icecream's ic function
-        from icecream import ic
-        ic(*args)
-    except NameError:
-        # Fallback to print if ic is not available
-        print(*args)
+    if hasattr(sys, 'frozen'):
+        # Application is frozen
+        print('Frozen application detected. Falling back to print:', *args)
+    else:
+        try:
+            from icecream import ic
+            ic(*args)
+        except ImportError:
+            print(*args)
 
 ############# INITIALIZE THE GUI ############################   
 
@@ -131,16 +133,20 @@ console_frame.grid(row=0, column=1, padx=5, pady=5)
 ############ ADD CONSOLE ###################################
 class TextRedirector(object):
     def __init__(self, widget):
+        # Constructor: Store the reference to the Tkinter text widget where the output will be redirected.
+        self.widget = widget
+
         self.widget = widget
 
     def write(self, str):
-        self.widget.configure(state='normal')
-        self.widget.insert(tk.END, str)
-        self.widget.see(tk.END)
-        self.widget.configure(state='disabled')
+        self.widget.configure(state='normal') # Temporarily enable the widget to allow text insertion.
+        self.widget.insert(tk.END, str) # Insert the output string at the end of the widget's current text.
+        self.widget.see(tk.END) # Scroll the widget to make the end of the text visible, ensuring the latest output is seen.
+        self.widget.configure(state='disabled') # Disable the widget again to prevent user edits.
 
     def flush(self):
-        pass  # This might be needed depending on the Python version.
+        # This method is required to mimic a file-like object, which might be needed for some operations.
+        pass # Intentionally left blank as it's not needed for the widget but might be called in the redirection process.
 
 # ScrolledText widget for the console
 console = scrolledtext.ScrolledText(console_frame, state='disabled', height=15)
