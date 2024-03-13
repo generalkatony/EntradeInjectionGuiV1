@@ -136,8 +136,6 @@ class TextRedirector(object):
         # Constructor: Store the reference to the Tkinter text widget where the output will be redirected.
         self.widget = widget
 
-        self.widget = widget
-
     def write(self, str):
         self.widget.configure(state='normal') # Temporarily enable the widget to allow text insertion.
         self.widget.insert(tk.END, str) # Insert the output string at the end of the widget's current text.
