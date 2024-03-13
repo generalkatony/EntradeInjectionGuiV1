@@ -15,9 +15,17 @@ from logic import *
 window = tk.Tk()
 window.title("Automata Alpha Release 1.0.3")
 
-# Source the Tcl scripts with relative paths for the themes
-window.tk.call("source", "Theme\\forest-light.tcl")
-window.tk.call("source", "Theme\\forest-dark.tcl")
+# Function to get the path of a file in the Theme folder
+def get_theme_path(file_name):
+    # Get the directory of the current script file
+    script_dir = os.path.dirname(__file__)
+    # Construct the path to the file in the Theme folder
+    theme_path = os.path.join(script_dir, "Theme", file_name)
+    return theme_path
+
+# Source the Tcl scripts using the correct paths
+window.tk.call("source", get_theme_path("forest-light.tcl"))
+window.tk.call("source", get_theme_path("forest-dark.tcl"))
 
 # Set the theme
 style = ttk.Style()

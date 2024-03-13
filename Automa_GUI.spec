@@ -1,15 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_data_files
-
-datas = []
-datas += collect_data_files('Theme')
 
 
 a = Analysis(
     ['Automa_GUI.py'],
     pathex=[],
     binaries=[],
-    datas=datas,
+    datas=[('Theme', 'Theme')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
