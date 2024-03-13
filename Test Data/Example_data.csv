@@ -1,4 +1,0 @@
-fulfillment_date,commodity,volume,price,asset,status,fill,final_delivery,subleg_id,external_id,external_source,dedupe_external_id,custom_field_name,trade_id
-11/10/2023,Aromatic,1,,,estimate,TRUE,FALSE,,,,TRUE,,149198
-12/10/2023,NG,20,,,,FALSE,TRUE,,,,,,
-13/10/2023,Aromatic,2,,,estimate,TRUE,FALSE,,,,TRUE,,149198
