@@ -8,8 +8,17 @@ from logic import *
 import sys
 
 ############## GENERAL FUNCTIONS ############################
+# PRINT WITH IC UNLESS HAVE ERROR WHICHASE USE STD PRINT
+def debug_print(*args):
+    try:
+        # Attempt to use icecream's ic function
+        from icecream import ic
+        ic(*args)
+    except NameError:
+        # Fallback to print if ic is not available
+        print(*args)
 
-############# INITIALIZE THE GUI ############################
+############# INITIALIZE THE GUI ############################   
 
 # Create the window
 window = tk.Tk()
@@ -276,12 +285,9 @@ def get_values(widget, entered_values):
             entered_values[var_name] = value
 
     # Now, you can print the formatted values
-    print("Formatted Entered Values:")
-    try:
-        ic(entered_values)
-    except NameError:
-        print(entered_values)
-
+    print("\n Formatted Entered Values:")
+    debug_print(entered_values)
+    print("\n")
 
 
 def get_custom_values(w, entered_values):
